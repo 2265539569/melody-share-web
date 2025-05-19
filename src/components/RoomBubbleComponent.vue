@@ -6,7 +6,7 @@ import router from '@/router';
 
 const props = defineProps({
   id: {
-    type: String,
+    type: Number,
     required: true
   },
   locked: {
@@ -25,6 +25,10 @@ const props = defineProps({
   count: {
     type: Number,
     default: 0
+  },
+  owner: {
+    type: String,
+    required: true,
   }
 });
 
@@ -87,10 +91,15 @@ const handlePasswordSubmit = () => {
     </div>
 
     <!-- 房间名称 -->
-    <span class="room-name">{{ name }}</span>
+    <div class="room-info">
+      <span class="room-name">{{ name }}</span>
+      <span>&nbsp;-&nbsp;</span>
+      <span class="owner-name">{{ owner }}</span>
+    </div>
+
 
     <!-- 右上角人数气泡 -->
-    <div class="user-count" v-if="count > 0">
+    <div class="user-count">
       {{ count }}
     </div>
 
@@ -159,7 +168,7 @@ const handlePasswordSubmit = () => {
 }
 
 /* 房间名称样式 */
-.room-name {
+.room-info {
   font-weight: 500;
   font-size: 14px;
   white-space: nowrap;

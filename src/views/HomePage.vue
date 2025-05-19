@@ -1,18 +1,43 @@
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import HeaderComponent from '@/components/HeaderComponent.vue';
 import RoomBubbleComponent from '@/components/RoomBubbleComponent.vue';
 import CreateRoomDialogComponent from '@/components/CreateRoomDialogComponent.vue';
+import { addRoom, getRoomList } from '@/api/room';
+import { ElMessage } from 'element-plus';
+// import { addRoom } from '@/api/room';
+// import { ElMessage } from 'element-plus';
 
 const showDialog = ref(false);
+const roomList = ref([])
+
+const fetchRoomList = async () => {
+  const result = await getRoomList()
+
+  if (result.data?.code === 200) {
+    roomList.value = result.data?.data
+
+  }
+}
+
+onMounted(() => {
+  fetchRoomList()
+})
 
 const handleCreateRoom = () => {
   showDialog.value = true;
 };
 
-const handleConfirmCreate = (roomData) => {
-  console.log('创建房间数据:', roomData);
-  // 这里添加实际创建房间的API调用
+const handleConfirmCreate = async (roomData) => {
+  console.log(roomData);
+  const result = await addRoom({ 'roomName': roomData.name, 'roomPass': roomData.password, 'description': roomData.description })
+  if (result.data?.code === 200) {
+    ElMessage({ type: 'success', message: result.data?.message })
+    // 刷新房间列表
+    fetchRoomList()
+  } else {
+    ElMessage({ type: "error", message: result.data?.message })
+  }
   showDialog.value = false;
 };
 
@@ -48,12 +73,8 @@ const handleLogoutClick = () => {
     <CreateRoomDialogComponent v-model:visible="showDialog" @confirm="handleConfirmCreate" />
 
     <div class="demo-container">
-      <!-- 普通房间 -->
-      <RoomBubbleComponent id="1" name="开发讨论室" description="这里是前端开发人员交流技术的空间" :count="5" />
-
-      <!-- 锁定房间 -->
-      <RoomBubbleComponent id="2" name="私密会议室" description="需要密码才能进入的私密空间" :locked="true" :count="2" />
-
+      <RoomBubbleComponent v-for="room in roomList" :key="room.id" :id="room.id" :name="room.roomName"
+        :owner="room.ownerName" :description="room.description" :count="room.count" :locked="!room.isPublic" />
     </div>
   </div>
 </template>

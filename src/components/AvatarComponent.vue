@@ -3,75 +3,90 @@
 import { UserFilled } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { useUserStore } from '@/stores/index'
+import Cookies from 'js-cookie'
+import { getUserInfo } from '@/api/user'
+import { onMounted, ref } from 'vue'
 
 const router = useRouter()
-const userStore = useUserStore()
+const userInfo = ref({})
+const menuItems = ref([]) // 初始化为空数组
 
-defineProps({
-  userInfo: {
-    type: Object,
-    default: () => ({
-      username: '游客',
-      avatar: ''
-    })
+// 统一更新菜单状态
+const updateMenu = () => {
+  const token = Cookies.get('ms-token')
+  if (token) {
+    menuItems.value = [
+      { label: '个人资料', action: handleProfile },
+      { label: '设置', action: handleSettings },
+      { label: '退出登录', action: handleLogout }
+    ]
+  } else {
+    menuItems.value = [
+      { label: '注册', action: handleRegister },
+      { label: '登录', action: handleLogin }
+    ]
+  }
+}
+
+// 获取用户信息
+const fetchUserInfo = async () => {
+  const { data } = await getUserInfo()
+  if (data?.code === 200) {
+    userInfo.value = data.data
+    return
+  }
+  // token失效时清空状态
+  Cookies.remove('ms-token')
+  updateMenu()
+}
+
+// 初始化
+onMounted(async () => {
+  updateMenu() // 先根据token更新菜单
+  if (Cookies.get('ms-token')) {
+    await fetchUserInfo() // 有token时才获取用户信息
   }
 })
 
-const menuItems = [
-{label: '注册', action: handleRegister},
-{label: '登录', action: handleLogin}
-]
-
-const loginedMenuItems = [
-  { label: '个人资料', action: handleProfile },
-  { label: '设置', action: handleSettings },
-  { label: '退出登录', action: handleLogout }
-]
-
-function handleRegister(){
+// 事件处理函数
+function handleRegister() {
   router.push('/register')
-  ElMessage.info('正在跳转注册页')
 }
 
-function handleLogin(){
-  router.push("/login")
-  ElMessage.info('正在跳转登录页')
+function handleLogin() {
+  router.push('/login')
 }
 
 function handleProfile() {
   router.push('/profile')
-  ElMessage.info('正在跳转个人资料')
 }
 
 function handleSettings() {
   router.push('/settings')
-  ElMessage.info('正在打开设置')
 }
 
 async function handleLogout() {
-  try {
-    await ElMessageBox.confirm('确定要退出登录吗？', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
-    userStore.logout()
-    router.push('/login')
+  await ElMessageBox.confirm('确定要退出登录吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    Cookies.remove('ms-token')
+    userInfo.value = {} // 清空用户信息
+    updateMenu() // 更新菜单状态
+    // router.push('/login')
     ElMessage.success('退出成功')
-  } catch {
-    ElMessage.info('已取消退出')
-  }
+  })
 }
 </script>
 
 <template>
   <div class="avatar-container">
     <el-dropdown>
-      <div class="user-info" >
+      <div class="user-info">
         <el-avatar :size="45" :icon="UserFilled" :src="userInfo.avatar || undefined" class="user-avatar" />
         <div class="username">
-          {{ userInfo.username }}
+          {{ userInfo.nickname }}
         </div>
       </div>
       <template #dropdown>

@@ -25,7 +25,7 @@ watch(() => props.visible, (val) => {
 watch(dialogVisible, (val) => {
   emit('update:visible', val)
   if (!val) {
-    // Reset form when dialog closes
+    // 当dialog关闭重置数据
     form.name = ''
     form.password = ''
     form.description = ''
@@ -46,13 +46,6 @@ const handleCancel = () => {
   dialogVisible.value = false
 }
 </script>
-
-<style scoped>
-.dialog-footer {
-  text-align: center;
-}
-</style>
-
 
 <template>
   <el-dialog v-model="dialogVisible" title="创建房间" width="500px" center>
@@ -75,3 +68,10 @@ const handleCancel = () => {
     </template>
   </el-dialog>
 </template>
+
+
+<style scoped>
+.dialog-footer {
+  text-align: center;
+}
+</style>

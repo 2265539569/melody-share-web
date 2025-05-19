@@ -14,8 +14,9 @@ const handleLogin = async () => {
   if (result.data?.code === 200) {
     ElMessage({ type: 'success', message: result.data?.message })
     router.push("/")
+  } else {
+    ElMessage({ type: 'error', message: result.data?.code ? result.data?.message : '未知错误' })
   }
-  ElMessage({ type: 'error', message: result.data?.code ? result.data?.message : '未知错误' })
 };
 </script>
 

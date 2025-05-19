@@ -3,22 +3,6 @@
 import { ref } from 'vue';
 import { Pointer } from '@element-plus/icons-vue';
 
-const currentUser = ref({
-  username: '音乐达人',
-  avatar: '@/assets/custom_avatar.jpg'
-})
-
-defineProps({
-  backgroundImage: {
-    type: String,
-    default: '@/assets/background.jpg'
-  },
-  defaultAvatar: {
-    type: String,
-    default: '@/assets/default_avatar.jpg'
-  }
-});
-
 const $emit = defineEmits(['create-room', 'search-room', 'profile-click', 'settings-click', 'logout-click']);
 
 const roomName = ref('');
@@ -33,7 +17,7 @@ const roomPass = ref('');
       <el-input v-model="roomPass" placeholder="房间密码（可选）" class="search-input" />
       <el-button type="primary" :icon="Pointer" circle @click="$emit('search-room', { roomName, roomPass })" />
     </div>
-    <AvatarComponent :user-info="currentUser" />
+    <AvatarComponent />
   </div>
 </template>
 
