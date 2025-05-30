@@ -3,24 +3,32 @@ import { onMounted, ref } from 'vue';
 import HeaderComponent from '@/components/HeaderComponent.vue';
 import RoomBubbleComponent from '@/components/RoomBubbleComponent.vue';
 import CreateRoomDialogComponent from '@/components/CreateRoomDialogComponent.vue';
-import { addRoom, getRoomList } from '@/api/room';
+import { addRoom, getRoomList, joinRoom, searchRoom } from '@/api/room';
 import { ElMessage } from 'element-plus';
-// import { addRoom } from '@/api/room';
-// import { ElMessage } from 'element-plus';
+import { userRoomInfo } from '@/api/user';
+import router from '@/router';
 
 const showDialog = ref(false);
 const roomList = ref([])
+const loading = ref(true)
+
+const fetchUserRoomInfo = async () => {
+  const result = await userRoomInfo()
+  if (result.data?.code === 200) {
+    router.push(`/room/${result.data?.data}`)
+  }
+}
 
 const fetchRoomList = async () => {
   const result = await getRoomList()
-
   if (result.data?.code === 200) {
+    loading.value = false
     roomList.value = result.data?.data
-
   }
 }
 
 onMounted(() => {
+  fetchUserRoomInfo()
   fetchRoomList()
 })
 
@@ -30,7 +38,7 @@ const handleCreateRoom = () => {
 
 const handleConfirmCreate = async (roomData) => {
   console.log(roomData);
-  const result = await addRoom({ 'roomName': roomData.name, 'roomPass': roomData.password, 'description': roomData.description })
+  const result = await addRoom({ 'roomName': roomData.name, 'roomPassword': roomData.password, 'description': roomData.description })
   if (result.data?.code === 200) {
     ElMessage({ type: 'success', message: result.data?.message })
     // 刷新房间列表
@@ -41,40 +49,46 @@ const handleConfirmCreate = async (roomData) => {
   showDialog.value = false;
 };
 
-const handleSearchRoom = (searchData) => {
-  console.log('搜索房间:', searchData);
-  // 这里添加搜索房间的逻辑
+const handleSearchRoom = async (searchData) => {
+  if (!searchData.roomName) {
+    ElMessage({ type: 'warning', message: '请输入房间名称' });
+    return;
+  }
+
+  const result = await searchRoom(searchData.roomName);
+  if (result.data?.code === 200) {
+    roomList.value = result.data?.data;
+    if (roomList.value.length === 0) {
+      ElMessage({ type: 'info', message: '未找到匹配的房间' });
+    }
+  } else {
+    ElMessage({ type: 'error', message: result.data?.message || '搜索失败' });
+  }
 };
 
-const handleProfileClick = () => {
-  console.log('点击了个人资料');
-  // 跳转到个人资料页
+// 加入房间的函数
+const handleJoinRoom = async (roomId, roomPassword = '') => {
+  const result = await joinRoom(roomId, roomPassword);
 
+  if (result.data?.code === 200 || result.data?.code === 508) {
+    ElMessage({ type: 'success', message: result.data?.message });
+    router.push(`/room/${roomId}`);
+  } else {
+    ElMessage({ type: 'error', message: result.data?.message });
+  }
 };
-
-const handleSettingsClick = () => {
-  console.log('点击了设置');
-  // 跳转到设置页
-};
-
-const handleLogoutClick = () => {
-  console.log('点击了退出');
-  // 处理退出登录逻辑
-};
-
-
 
 </script>
 
 <template>
-  <div class="home-container">
-    <HeaderComponent @create-room="handleCreateRoom" @search-room="handleSearchRoom" @profile-click="handleProfileClick"
-      @settings-click="handleSettingsClick" @logout-click="handleLogoutClick" />
+  <div class="home-container" v-loading="loading">
+    <HeaderComponent @create-room="handleCreateRoom" @search-room="handleSearchRoom" @reset-room="fetchRoomList" />
     <CreateRoomDialogComponent v-model:visible="showDialog" @confirm="handleConfirmCreate" />
 
     <div class="demo-container">
       <RoomBubbleComponent v-for="room in roomList" :key="room.id" :id="room.id" :name="room.roomName"
-        :owner="room.ownerName" :description="room.description" :count="room.count" :locked="!room.isPublic" />
+        :owner="room.ownerName" :description="room.description" :count="room.count" :locked="room.isPublic"
+        @join-room="handleJoinRoom" />
     </div>
   </div>
 </template>

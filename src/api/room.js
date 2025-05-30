@@ -17,5 +17,17 @@ export const updateRoom = (params) => {
 }
 
 export const joinRoom = (roomId, roomPass) => {
-  return request.get(`/room/join?roomId=${roomId}&roomPass=${roomPass}`)
+  return request.get(`/room/join?roomId=${roomId}&roomPassword=${roomPass}`)
+}
+
+export const getRoomInfo = () => {
+  return request.get('/room/info')
+}
+
+export const quitRoom = () => {
+  return request.get('/room/exit')
+}
+
+export const searchRoom = (roomName) => {
+  return request.get(`/room/search?roomName=${roomName}`)
 }

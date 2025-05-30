@@ -1,6 +1,7 @@
 import HomePage from '@/views/HomePage.vue'
 import LoginPage from '@/views/LoginPage.vue'
 import RegisterPage from '@/views/RegisterPage.vue'
+import RoomPage from '@/views/RoomPage.vue'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -12,7 +13,7 @@ const router = createRouter({
     },
     {
       path: '/room/:id',
-      component: () => import('@/views/RoomPages.vue')
+      component: RoomPage
     },
     { path: '/login', component: LoginPage },
     { path: '/register', component: RegisterPage }

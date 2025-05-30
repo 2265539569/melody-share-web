@@ -2,7 +2,6 @@
 import { ref } from 'vue';
 import { Lock, Unlock } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
-import router from '@/router';
 
 const props = defineProps({
   id: {
@@ -32,78 +31,55 @@ const props = defineProps({
   }
 });
 
-
-// 控制工具提示显示
 const showTooltip = ref(false);
-
-
-
-const emit = defineEmits(['click', 'password-submit']);
-
 const showPasswordDialog = ref(false);
 const password = ref('');
 
-// 点击处理逻辑
-const handleClick = () => {
+const emit = defineEmits(['join-room']);
+
+// 处理房间点击事件
+const handleClick = async () => {
   if (props.locked) {
     showPasswordDialog.value = true;
   } else {
-    // 路由跳转代替原有emit
-    router.push(`/room/${props.id}`);
-    // 保留原有emit供其他组件使用
-    emit('click', {
-      id: props.id,
-      name: props.name,
-      locked: props.locked,
-      count: props.count
-    });
+    emit('join-room', props.id);
   }
 };
 
-// 密码提交事件
-const handlePasswordSubmit = () => {
+// 处理密码提交事件
+const handlePasswordSubmit = async () => {
   if (!password.value) {
     ElMessage.warning('请输入密码');
     return;
   }
-  emit('password-submit', {
-    id: props.id,  // 添加id参数
-    name: props.name,
-    password: password.value
-  });
-  // 密码验证成功后跳转
-  router.push(`/room/${props.id}`);
+
+  emit('join-room', props.id, password.value);
+
+  // 清空密码并关闭对话框
   password.value = '';
   showPasswordDialog.value = false;
 };
 </script>
 
-
 <template>
-  <!-- 房间气泡组件，带悬停效果和点击事件 -->
   <div class="room-bubble" :class="{ 'locked': locked }" @mouseenter="showTooltip = true"
     @mouseleave="showTooltip = false" @click="handleClick">
-    <!-- 左上角锁图标 -->
     <div class="lock-icon">
       <el-icon :size="16" :color="locked ? '#ff4d4f' : '#52c41a'">
         <component :is="locked ? Lock : Unlock" />
       </el-icon>
     </div>
 
-    <!-- 房间名称 -->
     <div class="room-info">
-      <span class="room-name">{{ name }}</span>
-      <span>&nbsp;-&nbsp;</span>
       <span class="owner-name">{{ owner }}</span>
+      <span>&nbsp;-&nbsp;</span>
+      <span class="room-name">{{ name }}</span>
     </div>
 
-
-    <!-- 右上角人数气泡 -->
     <div class="user-count">
       {{ count }}
     </div>
 
-    <!-- 悬停时显示的房间描述 -->
     <transition name="fade">
       <div class="room-tooltip" v-show="showTooltip && description">
         <div class="tooltip-content">
@@ -125,21 +101,17 @@ const handlePasswordSubmit = () => {
   </el-dialog>
 </template>
 
-
 <style scoped>
-/* 基础房间气泡样式 - 深色背景 */
+/* 样式保持不变 */
 .room-bubble {
   position: relative;
   display: inline-flex;
   align-items: center;
   background-color: #1a1a2e;
-  /* 深色背景 */
   color: #ffffff;
-  /* 白色文字 */
   padding: 10px 15px;
   border-radius: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  /* 更深的阴影 */
   cursor: pointer;
   transition: all 0.3s ease;
   min-width: 120px;
@@ -147,27 +119,22 @@ const handlePasswordSubmit = () => {
   margin: 10px;
 }
 
-/* 锁定状态样式 */
 .room-bubble.locked {
   background-color: #2e1a1a;
-  /* 深红色背景 */
   border-color: #4a2a2a;
 }
 
-/* 悬停效果 */
 .room-bubble:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
-/* 锁图标样式 */
 .lock-icon {
   margin-right: 8px;
   display: flex;
   align-items: center;
 }
 
-/* 房间名称样式 */
 .room-info {
   font-weight: 500;
   font-size: 14px;
@@ -177,7 +144,6 @@ const handlePasswordSubmit = () => {
   max-width: 160px;
 }
 
-/* 用户计数气泡 */
 .user-count {
   position: absolute;
   top: -8px;
@@ -194,7 +160,6 @@ const handlePasswordSubmit = () => {
   font-weight: bold;
 }
 
-/* 房间描述工具提示 */
 .room-tooltip {
   position: absolute;
   bottom: calc(-100% - 20px);
@@ -214,7 +179,6 @@ const handlePasswordSubmit = () => {
   color: #e0e0e0;
 }
 
-/* 淡入淡出动画 */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s;

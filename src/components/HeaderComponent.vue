@@ -1,12 +1,12 @@
 <!-- HeaderComponent.vue -->
 <script setup>
 import { ref } from 'vue';
-import { Pointer } from '@element-plus/icons-vue';
 
-const $emit = defineEmits(['create-room', 'search-room', 'profile-click', 'settings-click', 'logout-click']);
+const $emit = defineEmits(['create-room', 'search-room', 'reset-room', 'profile-click', 'settings-click', 'logout-click']);
 
 const roomName = ref('');
-const roomPass = ref('');
+// const roomPass = ref('');
+
 </script>
 
 <template>
@@ -14,8 +14,10 @@ const roomPass = ref('');
     <el-button type="primary" round @click="$emit('create-room')">创建房间</el-button>
     <div class="search-container">
       <el-input v-model="roomName" placeholder="房间名" class="search-input" />
-      <el-input v-model="roomPass" placeholder="房间密码（可选）" class="search-input" />
-      <el-button type="primary" :icon="Pointer" circle @click="$emit('search-room', { roomName, roomPass })" />
+      <!-- <el-input v-model="roomPass" placeholder="房间密码（可选）" class="search-input" /> -->
+      <el-button type="primary" round @click="$emit('search-room', { roomName })">搜索</el-button>
+      <el-button type="primary" round @click="roomName = ''">重置</el-button>
+      <el-button type="primary" round @click="$emit('reset-room')">刷新房间</el-button>
     </div>
     <AvatarComponent />
   </div>

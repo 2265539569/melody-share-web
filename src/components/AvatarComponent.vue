@@ -4,7 +4,7 @@ import { UserFilled } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import Cookies from 'js-cookie'
-import { getUserInfo } from '@/api/user'
+import { getUserInfo, userLogout } from '@/api/user'
 import { onMounted, ref } from 'vue'
 
 const router = useRouter()
@@ -70,7 +70,8 @@ async function handleLogout() {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
-  }).then(() => {
+  }).then(async () => {
+    await userLogout()
     Cookies.remove('ms-token')
     userInfo.value = {} // 清空用户信息
     updateMenu() // 更新菜单状态
@@ -101,6 +102,10 @@ async function handleLogout() {
 </template>
 
 <style scoped>
+:focus-visible {
+  outline: none;
+}
+
 .avatar-container {
   position: relative;
   z-index: 10;
@@ -132,7 +137,7 @@ async function handleLogout() {
 }
 
 .user-avatar {
-  transition: transform 0.3s ease;
+  transition: transform 0.2s ease;
 }
 
 .user-avatar:hover {

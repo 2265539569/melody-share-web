@@ -32,8 +32,8 @@ const handleLogin = async () => {
       </div>
       <div class="input-group">
         <label for="password">密码</label>
-        <el-input id="password" v-model="password" type="password" placeholder="请输入密码" prefix-icon="el-icon-lock"
-          class="input-field" />
+        <el-input id="password" @keydown.enter="handleLogin" v-model="password" type="password" placeholder="请输入密码"
+          prefix-icon="el-icon-lock" class="input-field" />
       </div>
       <el-button type="primary" @click="handleLogin">登录</el-button>
     </div>
